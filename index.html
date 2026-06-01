@@ -114,7 +114,7 @@
                 const saved = localStorage.getItem('tq_banca_inicial');
                 return saved ? parseFloat(saved) : 1000.00;
             });
-            const [tempBanca, setTempBanca] = React.useState(bancaInicial);
+            const [tempBanca, setTempBanca] = React.useState(bancaInicial.toString());
             const [isEditingBanca, setIsEditingBanca] = React.useState(false);
             const [muted, setMuted] = React.useState(false);
             const [historico, setHistorico] = React.useState(() => {
@@ -136,13 +136,14 @@
             }, [historico]);
 
             const saveBancaValue = () => {
-                const val = parseFloat(tempBanca);
+                const sanitized = String(tempBanca).replace(',', '.');
+                const val = parseFloat(sanitized);
                 if (!isNaN(val) && val >= 0) {
                     setBancaInicial(val);
                     setIsEditingBanca(false);
                     playSound('success', muted);
                 } else {
-                    setTempBanca(bancaInicial);
+                    setTempBanca(bancaInicial.toString());
                     setIsEditingBanca(false);
                 }
             };
@@ -150,6 +151,9 @@
             const handleBancaKeyDown = (e) => {
                 if (e.key === 'Enter') {
                     saveBancaValue();
+                } else if (e.key === 'Escape') {
+                    setTempBanca(bancaInicial.toString());
+                    setIsEditingBanca(false);
                 }
             };
 
@@ -214,7 +218,7 @@
             const executeResetQuest = () => {
                 setHistorico([]);
                 setBancaInicial(1000.00);
-                setTempBanca(1000.00);
+                setTempBanca("1000.00");
                 setShowResetModal(false);
                 playSound('danger', muted);
                 setAiMessage("Protocolo de reset executado. Nova jornada iniciada. Mantenha o gerenciamento sob controle firme.");
@@ -242,7 +246,7 @@
                             const parsed = JSON.parse(event.target.result);
                             if (parsed && typeof parsed.bancaInicial === 'number' && Array.isArray(parsed.historico)) {
                                 setBancaInicial(parsed.bancaInicial);
-                                setTempBanca(parsed.bancaInicial);
+                                setTempBanca(parsed.bancaInicial.toString());
                                 setHistorico(parsed.historico);
                                 playSound('success', muted);
                                 alert("Backup importado com sucesso!");
@@ -305,93 +309,95 @@
             };
 
             return (
-                <div class="max-w-7xl mx-auto p-4 md:p-6 lg:p-8 space-y-6 relative z-10 font-rajdhani select-none">
+                <div className="max-w-7xl mx-auto p-4 md:p-6 lg:p-8 space-y-6 relative z-10 font-rajdhani select-none">
                     
                     {/* TOP CONTROL HEADER */}
-                    <div class="flex justify-between items-center bg-slate-900/60 backdrop-blur-md border border-slate-800 rounded-2xl px-6 py-4 neon-border-blue transition duration-300">
-                        <div class="flex items-center gap-3">
-                            <div class="w-3 h-3 bg-cyan-400 rounded-full animate-ping"></div>
-                            <h1 class="text-xl md:text-2xl font-black tracking-wider text-cyan-400 font-orbitron neon-text-blue">TRADER QUEST <span class="text-xs text-slate-500 font-mono">v3.0</span></h1>
+                    <div className="flex justify-between items-center bg-slate-900/60 backdrop-blur-md border border-slate-800 rounded-2xl px-6 py-4 neon-border-blue transition duration-300">
+                        <div className="flex items-center gap-3">
+                            <div className="w-3 h-3 bg-cyan-400 rounded-full animate-ping"></div>
+                            <h1 className="text-xl md:text-2xl font-black tracking-wider text-cyan-400 font-orbitron neon-text-blue">TRADER QUEST <span className="text-xs text-slate-500 font-mono">v3.0</span></h1>
                         </div>
-                        <div class="flex items-center gap-3">
-                            <button onClick={() => setMuted(!muted)} class="p-2.5 rounded-xl bg-slate-950/80 hover:bg-slate-800 border border-slate-800 text-slate-400 hover:text-cyan-400 transition">
+                        <div className="flex items-center gap-3">
+                            <button onClick={() => setMuted(!muted)} className="p-2.5 rounded-xl bg-slate-950/80 hover:bg-slate-800 border border-slate-800 text-slate-400 hover:text-cyan-400 transition">
                                 <Icon name={muted ? "volumeMute" : "volume"} className="w-5 h-5"/>
                             </button>
-                            <label class="p-2.5 rounded-xl bg-slate-950/80 hover:bg-slate-800 border border-slate-800 text-slate-400 hover:text-cyan-400 cursor-pointer transition">
+                            <label className="p-2.5 rounded-xl bg-slate-950/80 hover:bg-slate-800 border border-slate-800 text-slate-400 hover:text-cyan-400 cursor-pointer transition">
                                 <Icon name="upload" className="w-5 h-5"/>
-                                <input type="file" accept=".json" onChange={importBackup} class="hidden" />
+                                <input type="file" accept=".json" onChange={importBackup} className="hidden" />
                             </label>
-                            <button onClick={exportBackup} class="p-2.5 rounded-xl bg-slate-950/80 hover:bg-slate-800 border border-slate-800 text-slate-400 hover:text-cyan-400 transition">
+                            <button onClick={exportBackup} className="p-2.5 rounded-xl bg-slate-950/80 hover:bg-slate-800 border border-slate-800 text-slate-400 hover:text-cyan-400 transition">
                                 <Icon name="download" className="w-5 h-5"/>
                             </button>
-                            <button onClick={handleResetQuest} class="p-2.5 rounded-xl bg-slate-950/80 hover:bg-rose-950/40 border border-slate-800 hover:border-rose-900 text-slate-400 hover:text-rose-400 transition">
+                            <button onClick={handleResetQuest} className="p-2.5 rounded-xl bg-slate-950/80 hover:bg-rose-950/40 border border-slate-800 hover:border-rose-900 text-slate-400 hover:text-rose-400 transition">
                                 <Icon name="trash" className="w-5 h-5"/>
                             </button>
                         </div>
                     </div>
 
                     {/* UPPER STATS & HERO INTERFACE */}
-                    <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+                    <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
                         
                         {/* PROFILE CARD & QUEST PROGRESS */}
-                        <div class="lg:col-span-1 bg-slate-900/40 backdrop-blur-md border border-slate-900 rounded-3xl p-6 flex flex-col justify-between relative overflow-hidden group hover:border-slate-800 transition duration-300">
-                            <div class="absolute inset-0 bg-gradient-to-tr from-cyan-500/5 via-transparent to-transparent opacity-40 pointer-events-none"></div>
-                            <div class="flex items-center gap-4">
-                                <div class="w-16 h-16 rounded-2xl bg-gradient-to-b from-cyan-400 to-blue-600 p-[1px] shadow-lg shadow-cyan-500/10">
-                                    <div class="w-full h-full bg-slate-950 rounded-2xl flex flex-col items-center justify-center font-orbitron">
-                                        <span class="text-xs text-slate-500 font-bold">LVL</span>
-                                        <span class="text-2xl font-black text-cyan-400 neon-text-blue">{currentLevel}</span>
+                        <div className="lg:col-span-1 bg-slate-900/40 backdrop-blur-md border border-slate-900 rounded-3xl p-6 flex flex-col justify-between relative overflow-hidden group hover:border-slate-800 transition duration-300">
+                            <div className="absolute inset-0 bg-gradient-to-tr from-cyan-500/5 via-transparent to-transparent opacity-40 pointer-events-none"></div>
+                            <div className="flex items-center gap-4">
+                                <div className="w-16 h-16 rounded-2xl bg-gradient-to-b from-cyan-400 to-blue-600 p-[1px] shadow-lg shadow-cyan-500/10">
+                                    <div className="w-full h-full bg-slate-950 rounded-2xl flex flex-col items-center justify-center font-orbitron">
+                                        <span className="text-xs text-slate-500 font-bold">LVL</span>
+                                        <span className="text-2xl font-black text-cyan-400 neon-text-blue">{currentLevel}</span>
                                     </div>
                                 </div>
-                                <div class="space-y-0.5">
-                                    <h2 class="text-lg font-bold tracking-wide font-orbitron text-slate-200">OPERADOR_LOG</h2>
-                                    <p class="text-xs font-mono text-cyan-400 tracking-widest uppercase">Rank: Combatente de Elite</p>
+                                <div className="space-y-0.5">
+                                    <h2 className="text-lg font-bold tracking-wide font-orbitron text-slate-200">OPERADOR_LOG</h2>
+                                    <p className="text-xs font-mono text-cyan-400 tracking-widest uppercase">Rank: Combatente de Elite</p>
                                 </div>
                             </div>
 
-                            <div class="space-y-2 mt-6">
-                                <div class="flex justify-between text-xs font-mono text-slate-400 tracking-wider">
+                            <div className="space-y-2 mt-6">
+                                <div className="flex justify-between text-xs font-mono text-slate-400 tracking-wider">
                                     <span>XP TOTAL: {xpTotal} pts</span>
-                                    <span class="text-cyan-400">{levelProgress}%</span>
+                                    <span className="text-cyan-400">{levelProgress}%</span>
                                 </div>
-                                <div class="w-full h-2.5 bg-slate-950 rounded-full p-[2px] border border-slate-800">
-                                    <div class="h-full bg-gradient-to-r from-cyan-500 to-blue-500 rounded-full shadow-md shadow-cyan-400/50 transition-all duration-500" style={{ width: `${levelProgress}%` }}></div>
+                                <div className="w-full h-2.5 bg-slate-950 rounded-full p-[2px] border border-slate-800">
+                                    <div className="h-full bg-gradient-to-r from-cyan-500 to-blue-500 rounded-full shadow-md shadow-cyan-400/50 transition-all duration-500" style={{ width: `${levelProgress}%` }}></div>
                                 </div>
-                                <p class="text-[10px] font-mono text-slate-500 text-right">Faltam {xpNextLevel - xpTotal} XP para o próximo nível</p>
+                                <p className="text-[10px] font-mono text-slate-500 text-right">Faltam {xpNextLevel - xpTotal} XP para o próximo nível</p>
                             </div>
                         </div>
 
                         {/* LIVE CASH MATRIX COMPONENT */}
-                        <div class={`lg:col-span-2 grid grid-cols-1 md:grid-cols-3 gap-4 p-4 rounded-3xl bg-slate-900/20 backdrop-blur-sm border transition duration-500 ${totalProfitLoss >= 0 ? 'neon-border-green/30 border-green-950/40' : 'neon-border-red/30 border-rose-950/40'}`}>
+                        <div className={`lg:col-span-2 grid grid-cols-1 md:grid-cols-3 gap-4 p-4 rounded-3xl bg-slate-900/20 backdrop-blur-sm border transition duration-500 ${totalProfitLoss >= 0 ? 'neon-border-green/30 border-green-950/40' : 'neon-border-red/30 border-rose-950/40'}`}>
                             
                             {/* INITIAL INVESTMENT */}
-                            <div class="bg-slate-950/80 rounded-2xl p-5 border border-slate-900 flex flex-col justify-between group transition">
-                                <div class="flex justify-between items-start">
-                                    <p class="text-xs font-mono text-slate-400 tracking-widest uppercase">Banca Inicial</p>
+                            <div className="bg-slate-950/80 rounded-2xl p-5 border border-slate-900 flex flex-col justify-between group transition">
+                                <div className="flex justify-between items-start">
+                                    <p className="text-xs font-mono text-slate-400 tracking-widest uppercase">Banca Inicial</p>
                                     <Icon name="wallet" className="w-5 h-5 text-slate-500 group-hover:text-cyan-400 transition"/>
                                 </div>
-                                <div class="mt-4 flex items-center gap-2">
+                                <div className="mt-4 flex items-center gap-2">
                                     {isEditingBanca ? (
-                                        <div class="flex items-center gap-1 w-full bg-slate-900 px-2 py-1 rounded-xl border border-cyan-500">
-                                            <span class="text-xs font-mono text-slate-500">R$</span>
+                                        <div className="flex items-center gap-1 w-full bg-slate-900 px-2 py-1 rounded-xl border border-cyan-500">
+                                            <span className="text-xs font-mono text-slate-500">R$</span>
                                             <input 
-                                                type="number" 
-                                                step="0.01" 
+                                                type="text" 
+                                                inputMode="decimal"
                                                 value={tempBanca}
                                                 onChange={(e) => setTempBanca(e.target.value)}
                                                 onKeyDown={handleBancaKeyDown}
-                                                onBlur={saveBancaValue}
                                                 autoFocus
-                                                class="bg-transparent text-slate-200 font-orbitron font-bold text-base outline-none w-full"
+                                                className="bg-transparent text-slate-200 font-mono font-bold text-base outline-none w-full"
                                             />
-                                            <button onClick={saveBancaValue} class="text-green-400 hover:text-green-300">
+                                            <button onClick={saveBancaValue} className="text-green-400 hover:text-green-300 p-1">
                                                 <Icon name="check" className="w-4 h-4"/>
+                                            </button>
+                                            <button onClick={() => { setTempBanca(bancaInicial.toString()); setIsEditingBanca(false); }} className="text-rose-400 hover:text-rose-300 p-1">
+                                                <Icon name="x" className="w-4 h-4"/>
                                             </button>
                                         </div>
                                     ) : (
-                                        <div class="flex items-center justify-between w-full group/btn">
-                                            <span class="text-xl font-black font-orbitron tracking-tight text-slate-200">R$ {bancaInicial.toFixed(2)}</span>
-                                            <button onClick={() => { playSound('click', muted); setIsEditingBanca(true); }} class="opacity-0 group-hover/btn:opacity-100 p-1 bg-slate-900 rounded-lg text-slate-400 hover:text-cyan-400 transition">
+                                        <div className="flex items-center justify-between w-full group/btn">
+                                            <span className="text-xl font-black font-mono tracking-tight text-slate-200">R$ {bancaInicial.toFixed(2)}</span>
+                                            <button onClick={() => { playSound('click', muted); setTempBanca(bancaInicial.toString()); setIsEditingBanca(true); }} className="opacity-100 lg:opacity-0 group-hover/btn:opacity-100 p-1 bg-slate-900 rounded-lg text-slate-400 hover:text-cyan-400 transition">
                                                 <Icon name="edit" className="w-3.5 h-3.5"/>
                                             </button>
                                         </div>
@@ -400,28 +406,28 @@
                             </div>
 
                             {/* LIQUID CURRENT FLOW */}
-                            <div class="bg-slate-950/80 rounded-2xl p-5 border border-slate-900 flex flex-col justify-between transition">
-                                <div class="flex justify-between items-start">
-                                    <p class="text-xs font-mono text-slate-400 tracking-widest uppercase">Banca Atual</p>
+                            <div className="bg-slate-950/80 rounded-2xl p-5 border border-slate-900 flex flex-col justify-between transition">
+                                <div className="flex justify-between items-start">
+                                    <p className="text-xs font-mono text-slate-400 tracking-widest uppercase">Banca Atual</p>
                                     <Icon name={totalProfitLoss >= 0 ? "trendingUp" : "trendingDown"} className={`w-5 h-5 ${totalProfitLoss >= 0 ? 'text-green-500' : 'text-rose-500'}`}/>
                                 </div>
-                                <div class="mt-4">
-                                    <span class={`text-xl font-black font-orbitron tracking-tight ${bancaAtual >= bancaInicial ? 'text-green-400 neon-text-green' : 'text-rose-400 neon-text-red'}`}>
+                                <div className="mt-4">
+                                    <span className={`text-xl font-black font-mono tracking-tight ${bancaAtual >= bancaInicial ? 'text-green-400 neon-text-green' : 'text-rose-400 neon-text-red'}`}>
                                         R$ {bancaAtual.toFixed(2)}
                                     </span>
                                 </div>
                             </div>
 
                             {/* MATRIX NET RESULT */}
-                            <div class="bg-slate-950/80 rounded-2xl p-5 border border-slate-900 flex flex-col justify-between transition">
-                                <div class="flex justify-between items-start">
-                                    <p class="text-xs font-mono text-slate-400 tracking-widest uppercase">Net Retorno</p>
-                                    <span class={`text-[10px] font-mono px-2 py-0.5 rounded-full border ${totalProfitLoss >= 0 ? 'bg-green-950/30 border-green-800/40 text-green-400' : 'bg-rose-950/30 border-rose-800/40 text-rose-400'}`}>
+                            <div className="bg-slate-950/80 rounded-2xl p-5 border border-slate-900 flex flex-col justify-between transition">
+                                <div className="flex justify-between items-start">
+                                    <p className="text-xs font-mono text-slate-400 tracking-widest uppercase">Net Retorno</p>
+                                    <span className={`text-[10px] font-mono px-2 py-0.5 rounded-full border ${totalProfitLoss >= 0 ? 'bg-green-950/30 border-green-800/40 text-green-400' : 'bg-rose-950/30 border-rose-800/40 text-rose-400'}`}>
                                         {totalProfitLoss >= 0 ? '+' : ''}{totalTrades > 0 ? ((totalProfitLoss / bancaInicial) * 100).toFixed(2) : '0.00'}%
                                     </span>
                                 </div>
-                                <div class="mt-4">
-                                    <span class={`text-xl font-black font-orbitron tracking-tight ${totalProfitLoss >= 0 ? 'text-green-400' : 'text-rose-400'}`}>
+                                <div className="mt-4">
+                                    <span className={`text-xl font-black font-mono tracking-tight ${totalProfitLoss >= 0 ? 'text-green-400' : 'text-rose-400'}`}>
                                         R$ {totalProfitLoss.toFixed(2)}
                                     </span>
                                 </div>
@@ -431,28 +437,28 @@
                     </div>
 
                     {/* INTERACTIVE ROW BLOCK (FORM + NEURAL INTERFACE) */}
-                    <div class="grid grid-cols-1 lg:grid-cols-12 gap-6">
+                    <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
                         
                         {/* MANUAL ENTRY FORMS */}
-                        <div class="lg:col-span-5 bg-slate-900/40 backdrop-blur-md border border-slate-900 hover:border-slate-800 rounded-3xl p-6 transition duration-300">
-                            <h3 class="text-base font-bold font-orbitron text-slate-300 tracking-wider mb-4 border-b border-slate-800/60 pb-2 flex items-center gap-2">
-                                <span class="w-1.5 h-3 bg-cyan-400 rounded-full"></span>REGISTRAR OPERAÇÃO
+                        <div className="lg:col-span-5 bg-slate-900/40 backdrop-blur-md border border-slate-900 hover:border-slate-800 rounded-3xl p-6 transition duration-300">
+                            <h3 className="text-base font-bold font-orbitron text-slate-300 tracking-wider mb-4 border-b border-slate-800/60 pb-2 flex items-center gap-2">
+                                <span className="w-1.5 h-3 bg-cyan-400 rounded-full"></span>REGISTRAR OPERAÇÃO
                             </h3>
-                            <form onSubmit={handleAddTrade} class="space-y-4">
+                            <form onSubmit={handleAddTrade} className="space-y-4">
                                 <div>
-                                    <label class="block text-xs font-mono text-slate-400 uppercase tracking-widest mb-1.5">Direção Operacional</label>
-                                    <div class="grid grid-cols-2 gap-3">
-                                        <button type="button" onClick={() => { playSound('click', muted); setFormData({ ...formData, tipo: 'WIN' }); }} class={`py-3 rounded-xl font-orbitron font-bold tracking-wider text-xs border transition ${formData.tipo === 'WIN' ? 'bg-green-500 border-green-400 text-slate-950 shadow-lg shadow-green-500/20' : 'bg-slate-950 border-slate-800 text-slate-400 hover:border-slate-700'}`}>
+                                    <label className="block text-xs font-mono text-slate-400 uppercase tracking-widest mb-1.5">Direção Operacional</label>
+                                    <div className="grid grid-cols-2 gap-3">
+                                        <button type="button" onClick={() => { playSound('click', muted); setFormData({ ...formData, tipo: 'WIN' }); }} className={`py-3 rounded-xl font-orbitron font-bold tracking-wider text-xs border transition ${formData.tipo === 'WIN' ? 'bg-green-500 border-green-400 text-slate-950 shadow-lg shadow-green-500/20' : 'bg-slate-950 border-slate-800 text-slate-400 hover:border-slate-700'}`}>
                                             WIN ⚔️
                                         </button>
-                                        <button type="button" onClick={() => { playSound('click', muted); setFormData({ ...formData, tipo: 'LOSS' }); }} class={`py-3 rounded-xl font-orbitron font-bold tracking-wider text-xs border transition ${formData.tipo === 'LOSS' ? 'bg-rose-500 border-rose-400 text-slate-950 shadow-lg shadow-rose-500/20' : 'bg-slate-950 border-slate-800 text-slate-400 hover:border-slate-700'}`}>
+                                        <button type="button" onClick={() => { playSound('click', muted); setFormData({ ...formData, tipo: 'LOSS' }); }} className={`py-3 rounded-xl font-orbitron font-bold tracking-wider text-xs border transition ${formData.tipo === 'LOSS' ? 'bg-rose-500 border-rose-400 text-slate-950 shadow-lg shadow-rose-500/20' : 'bg-slate-950 border-slate-800 text-slate-400 hover:border-slate-700'}`}>
                                             LOSS ☠️
                                         </button>
                                     </div>
                                 </div>
 
                                 <div>
-                                    <label class="block text-xs font-mono text-slate-400 uppercase tracking-widest mb-1.5">Impacto Financeiro (R$)</label>
+                                    <label className="block text-xs font-mono text-slate-400 uppercase tracking-widest mb-1.5">Impacto Financeiro (R$)</label>
                                     <input 
                                         type="number" 
                                         step="0.01" 
@@ -460,46 +466,46 @@
                                         placeholder="0.00" 
                                         value={formData.valor}
                                         onChange={(e) => setFormData({ ...formData, valor: e.target.value })}
-                                        class="w-full bg-slate-950 border border-slate-800 focus:border-slate-700 rounded-xl px-4 py-3 font-orbitron font-medium text-slate-200 text-sm outline-none placeholder:text-slate-700 transition"
+                                        className="w-full bg-slate-950 border border-slate-800 focus:border-slate-700 rounded-xl px-4 py-3 font-mono font-medium text-slate-200 text-sm outline-none placeholder:text-slate-700 transition"
                                     />
                                 </div>
 
                                 <div>
-                                    <label class="block text-xs font-mono text-slate-400 uppercase tracking-widest mb-1.5">Notas do Mindset / Setup</label>
+                                    <label className="block text-xs font-mono text-slate-400 uppercase tracking-widest mb-1.5">Notas do Mindset / Setup</label>
                                     <textarea 
                                         placeholder="Ex: Entrei a favor da tendência, mantive calma..." 
                                         rows="2"
                                         value={formData.descricao}
                                         onChange={(e) => setFormData({ ...formData, descricao: e.target.value })}
-                                        class="w-full bg-slate-950 border border-slate-800 focus:border-slate-700 rounded-xl px-4 py-3 text-slate-200 text-sm outline-none placeholder:text-slate-700 transition resize-none"
+                                        className="w-full bg-slate-950 border border-slate-800 focus:border-slate-700 rounded-xl px-4 py-3 text-slate-200 text-sm outline-none placeholder:text-slate-700 transition resize-none"
                                     ></textarea>
                                 </div>
 
-                                <button type="submit" class="w-full py-4 bg-gradient-to-r from-cyan-500 to-blue-600 hover:from-cyan-400 hover:to-blue-500 text-slate-950 font-black font-orbitron text-xs tracking-widest rounded-xl shadow-lg shadow-cyan-500/10 hover:shadow-cyan-400/20 active:scale-[0.99] transition duration-150">
+                                <button type="submit" className="w-full py-4 bg-gradient-to-r from-cyan-500 to-blue-600 hover:from-cyan-400 hover:to-blue-500 text-slate-950 font-black font-orbitron text-xs tracking-widest rounded-xl shadow-lg shadow-cyan-500/10 hover:shadow-cyan-400/20 active:scale-[0.99] transition duration-150">
                                     CONCLUIR TASK OPERACIONAL
                                 </button>
                             </form>
                         </div>
 
                         {/* NEURAL COUNSEL BOX (GEMINI AI ENGINE) */}
-                        <div class="lg:col-span-7 bg-slate-900/40 backdrop-blur-md border border-slate-900 rounded-3xl p-6 flex flex-col justify-between group relative overflow-hidden transition duration-300 hover:border-slate-800">
-                            <div class="absolute -right-16 -top-16 w-44 h-44 bg-cyan-500/5 rounded-full blur-3xl pointer-events-none group-hover:bg-cyan-500/10 transition duration-500"></div>
+                        <div className="lg:col-span-7 bg-slate-900/40 backdrop-blur-md border border-slate-900 rounded-3xl p-6 flex flex-col justify-between group relative overflow-hidden transition duration-300 hover:border-slate-800">
+                            <div className="absolute -right-16 -top-16 w-44 h-44 bg-cyan-500/5 rounded-full blur-3xl pointer-events-none group-hover:bg-cyan-500/10 transition duration-500"></div>
                             
                             <div>
                                 <div class="flex justify-between items-center mb-4 border-b border-slate-800/60 pb-2">
-                                    <h3 class="text-base font-bold font-orbitron text-slate-300 tracking-wider flex items-center gap-2">
+                                    <h3 className="text-base font-bold font-orbitron text-slate-300 tracking-wider flex items-center gap-2">
                                         <Icon name="brain" className="w-5 h-5 text-cyan-400 animate-pulse"/> GUARDIÃO PSICOLÓGICO REAL
                                     </h3>
-                                    <span class="text-[10px] font-mono px-2 py-0.5 rounded bg-cyan-950/40 text-cyan-400 border border-cyan-900/60 font-bold uppercase tracking-widest">Gemini Engine v1.5</span>
+                                    <span className="text-[10px] font-mono px-2 py-0.5 rounded bg-cyan-950/40 text-cyan-400 border border-cyan-900/60 font-bold uppercase tracking-widest">Gemini Engine v1.5</span>
                                 </div>
-                                <div class="bg-slate-950/80 rounded-2xl p-4 border border-slate-900 min-h-[140px] flex items-center justify-center">
+                                <div className="bg-slate-950/80 rounded-2xl p-4 border border-slate-900 min-h-[140px] flex items-center justify-center">
                                     {loadingAi ? (
-                                        <div class="flex flex-col items-center gap-3 text-cyan-400 font-mono text-xs tracking-wider">
+                                        <div className="flex flex-col items-center gap-3 text-cyan-400 font-mono text-xs tracking-wider">
                                             <div class="w-6 h-6 border-2 border-cyan-400 border-t-transparent rounded-full animate-spin"></div>
                                             <span>SINCRONIZANDO ONDAS CEREBRAIS...</span>
                                         </div>
                                     ) : (
-                                        <p class="text-sm text-slate-300 leading-relaxed font-sans italic text-center">
+                                        <p className="text-sm text-slate-300 leading-relaxed font-sans italic text-center">
                                             "{aiMessage}"
                                         </p>
                                     )}
@@ -509,7 +515,7 @@
                             <button 
                                 onClick={fetchAiCounsel}
                                 disabled={loadingAi || totalTrades === 0}
-                                class={`w-full mt-4 py-3 border font-orbitron font-bold text-xs tracking-wider rounded-xl transition ${totalTrades === 0 ? 'bg-slate-950 border-slate-900 text-slate-600 cursor-not-allowed' : 'bg-slate-950 hover:bg-slate-900 border-cyan-500/30 hover:border-cyan-400 text-cyan-400 shadow-sm shadow-cyan-500/5 hover:shadow-cyan-400/20'}`}
+                                className={`w-full mt-4 py-3 border font-orbitron font-bold text-xs tracking-wider rounded-xl transition ${totalTrades === 0 ? 'bg-slate-950 border-slate-900 text-slate-600 cursor-not-allowed' : 'bg-slate-950 hover:bg-slate-900 border-cyan-500/30 hover:border-cyan-400 text-cyan-400 shadow-sm shadow-cyan-500/5 hover:shadow-cyan-400/20'}`}
                             >
                                 {totalTrades === 0 ? "REGISTRE TRADES PARA ATIVAR O CONSELHO" : "REQUISITAR DIRETRIZ MENTAL"}
                             </button>
@@ -518,60 +524,60 @@
                     </div>
 
                     {/* STATS ANALYTICS BAR */}
-                    <div class="grid grid-cols-2 md:grid-cols-4 gap-4">
-                        <div class="bg-slate-900/40 border border-slate-900 rounded-2xl p-4 text-center">
-                            <p class="text-xs font-mono text-slate-500 uppercase tracking-widest">Ações Totais</p>
-                            <p class="text-xl font-bold font-orbitron text-slate-200 mt-1">{totalTrades}</p>
+                    <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+                        <div className="bg-slate-900/40 border border-slate-900 rounded-2xl p-4 text-center">
+                            <p className="text-xs font-mono text-slate-500 uppercase tracking-widest">Ações Totais</p>
+                            <p className="text-xl font-bold font-mono text-slate-200 mt-1">{totalTrades}</p>
                         </div>
-                        <div class="bg-slate-900/40 border border-slate-900 rounded-2xl p-4 text-center">
-                            <p class="text-xs font-mono text-slate-500 uppercase tracking-widest">Sucessos (Win)</p>
-                            <p class="text-xl font-bold font-orbitron text-green-400 mt-1">{totalWins}</p>
+                        <div className="bg-slate-900/40 border border-slate-900 rounded-2xl p-4 text-center">
+                            <p className="text-xs font-mono text-slate-500 uppercase tracking-widest">Sucessos (Win)</p>
+                            <p className="text-xl font-bold font-mono text-green-400 mt-1">{totalWins}</p>
                         </div>
-                        <div class="bg-slate-900/40 border border-slate-900 rounded-2xl p-4 text-center">
-                            <p class="text-xs font-mono text-slate-500 uppercase tracking-widest">Falhas (Loss)</p>
-                            <p class="text-xl font-bold font-orbitron text-rose-400 mt-1">{totalLosses}</p>
+                        <div className="bg-slate-900/40 border border-slate-900 rounded-2xl p-4 text-center">
+                            <p className="text-xs font-mono text-slate-500 uppercase tracking-widest">Falhas (Loss)</p>
+                            <p className="text-xl font-bold font-mono text-rose-400 mt-1">{totalLosses}</p>
                         </div>
-                        <div class="bg-slate-900/40 border border-slate-900 rounded-2xl p-4 text-center">
-                            <p class="text-xs font-mono text-slate-500 uppercase tracking-widest">Taxa de Acerto</p>
-                            <p class="text-xl font-bold font-orbitron text-cyan-400 mt-1">{winRate}%</p>
+                        <div className="bg-slate-900/40 border border-slate-900 rounded-2xl p-4 text-center">
+                            <p className="text-xs font-mono text-slate-500 uppercase tracking-widest">Taxa de Acerto</p>
+                            <p className="text-xl font-bold font-mono text-cyan-400 mt-1">{winRate}%</p>
                         </div>
                     </div>
 
                     {/* HISTORY LOGS TABLE */}
-                    <div class="bg-slate-900/40 backdrop-blur-md border border-slate-900 rounded-3xl p-6">
-                        <h3 class="text-base font-bold font-orbitron text-slate-300 tracking-wider mb-4 border-b border-slate-800/60 pb-2 flex items-center gap-2">
+                    <div className="bg-slate-900/40 backdrop-blur-md border border-slate-900 rounded-3xl p-6">
+                        <h3 className="text-base font-bold font-orbitron text-slate-300 tracking-wider mb-4 border-b border-slate-800/60 pb-2 flex items-center gap-2">
                             <span class="w-1.5 h-3 bg-cyan-400 rounded-full"></span>LOG HISTÓRICO DE OPERAÇÕES
                         </h3>
                         
-                        <div class="overflow-x-auto w-full">
+                        <div className="overflow-x-auto w-full">
                             {historico.length === 0 ? (
-                                <div class="text-center py-12 bg-slate-950/60 rounded-2xl border border-slate-900 text-slate-600 font-mono text-xs tracking-wider">
+                                <div className="text-center py-12 bg-slate-950/60 rounded-2xl border border-slate-900 text-slate-600 font-mono text-xs tracking-wider">
                                     NENHUM DADO OPERACIONAL ENCONTRADO NO BANCO LOCAL
                                 </div>
                             ) : (
-                                <table class="w-full text-left border-collapse min-w-[600px]">
+                                <table className="w-full text-left border-collapse min-w-[600px]">
                                     <thead>
-                                        <tr class="border-b border-slate-800/60 text-slate-500 font-mono text-xs uppercase tracking-widest">
-                                            <th class="pb-3 pl-2">Data / Hora</th>
-                                            <th class="pb-3">Tipo</th>
-                                            <th class="pb-3">Valor</th>
-                                            <th class="pb-3">Notas Psicológicas</th>
-                                            <th class="pb-3 text-center">Ação</th>
+                                        <tr className="border-b border-slate-800/60 text-slate-500 font-mono text-xs uppercase tracking-widest">
+                                            <th className="pb-3 pl-2">Data / Hora</th>
+                                            <th className="pb-3">Tipo</th>
+                                            <th className="pb-3">Valor</th>
+                                            <th className="pb-3">Notas Psicológicas</th>
+                                            <th className="pb-3 text-center">Ação</th>
                                         </tr>
                                     </thead>
-                                    <tbody class="divide-y divide-slate-900/40 text-sm font-medium text-slate-300">
+                                    <tbody className="divide-y divide-slate-900/40 text-sm font-medium text-slate-300">
                                         {historico.map((trade) => (
-                                            <tr key={trade.id} class="hover:bg-slate-900/20 transition group">
-                                                <td class="py-3.5 pl-2 font-mono text-xs text-slate-500">{trade.date}</td>
-                                                <td class="py-3.5">
-                                                    <span class={`font-orbitron font-bold text-xs tracking-wider ${trade.tipo === 'WIN' ? 'text-green-400' : 'text-rose-400'}`}>
+                                            <tr key={trade.id} className="hover:bg-slate-900/20 transition group">
+                                                <td className="py-3.5 pl-2 font-mono text-xs text-slate-500">{trade.date}</td>
+                                                <td className="py-3.5">
+                                                    <span className={`font-orbitron font-bold text-xs tracking-wider ${trade.tipo === 'WIN' ? 'text-green-400' : 'text-rose-400'}`}>
                                                         {trade.tipo}
                                                     </span>
                                                 </td>
-                                                <td class="py-3.5 font-orbitron text-slate-200">R$ {trade.valor.toFixed(2)}</td>
-                                                <td class="py-3.5 text-xs text-slate-400 max-w-xs md:max-w-md truncate font-sans">{trade.descricao}</td>
-                                                <td class="py-3.5 text-center">
-                                                    <button onClick={() => handleDeleteTrade(trade.id)} class="p-1.5 rounded-lg bg-slate-950 border border-slate-900 text-slate-600 hover:text-rose-400 hover:border-rose-950 opacity-100 lg:opacity-0 group-hover:opacity-100 transition">
+                                                <td className="py-3.5 font-mono text-slate-200">R$ {trade.valor.toFixed(2)}</td>
+                                                <td className="py-3.5 text-xs text-slate-400 max-w-xs md:max-w-md truncate font-sans">{trade.descricao}</td>
+                                                <td className="py-3.5 text-center">
+                                                    <button onClick={() => handleDeleteTrade(trade.id)} className="p-1.5 rounded-lg bg-slate-950 border border-slate-900 text-slate-600 hover:text-rose-400 hover:border-rose-950 opacity-100 lg:opacity-0 group-hover:opacity-100 transition">
                                                         <Icon name="x" className="w-3.5 h-3.5"/>
                                                     </button>
                                                 </td>
@@ -585,18 +591,18 @@
 
                     {/* MODAL RESET CONFIRMATION */}
                     {showResetModal && (
-                        <div class="fixed inset-0 z-50 bg-slate-950/80 backdrop-blur-sm flex items-center justify-center p-4">
-                            <div class="bg-slate-900 border border-rose-900 max-w-md w-full rounded-2xl p-6 relative space-y-4 neon-border-red animate-scaleIn">
+                        <div className="fixed inset-0 z-50 bg-slate-950/80 backdrop-blur-sm flex items-center justify-center p-4">
+                            <div className="bg-slate-900 border border-rose-900 max-w-md w-full rounded-2xl p-6 relative space-y-4 neon-border-red animate-scaleIn">
                                 <div class="flex items-center gap-3 border-b border-rose-950 pb-2">
                                     <Icon name="trash" className="w-6 h-6 text-rose-500 animate-bounce" />
-                                    <h4 class="text-base font-black font-orbitron tracking-wider text-rose-500">ALERTA CRÍTICO DE RESET</h4>
+                                    <h4 className="text-base font-black font-orbitron tracking-wider text-rose-500">ALERTA CRÍTICO DE RESET</h4>
                                 </div>
-                                <p class="text-xs text-slate-300 leading-relaxed font-sans">Esta ação apagará todo o seu progresso diário, zerará sua banca acumulada e reiniciará a sua jornada. Tem certeza de que quer limpar este histórico?</p>
-                                <div class="flex gap-2 pt-2">
-                                    <button onClick={executeResetQuest} class="flex-1 py-3 bg-rose-500 hover:bg-rose-400 text-slate-950 font-bold font-orbitron text-xs tracking-wider rounded-xl transition duration-150">SIM, RESETAR ☠️</button>
-                                    <button onClick={() => { playSound('click', muted); setShowResetModal(false); }} class="flex-1 py-3 bg-slate-900 hover:bg-slate-800 border border-slate-700 text-slate-400 font-mono text-xs tracking-wider rounded-xl transition duration-150">NÃO, CANCELAR</button>
+                                <p className="text-xs text-slate-300 leading-relaxed font-sans">Esta ação apagará todo o seu progresso diário, zerará sua banca acumulada e reiniciará a sua jornada. Tem certeza de que quer limpar este histórico?</p>
+                                <div className="flex gap-2 pt-2">
+                                    <button onClick={executeResetQuest} className="flex-1 py-3 bg-rose-500 hover:bg-rose-400 text-slate-950 font-bold font-mono text-xs tracking-wider rounded-xl transition duration-150">SIM, RESETAR ☠️</button>
+                                    <button onClick={() => { playSound('click', muted); setShowResetModal(false); }} className="flex-1 py-3 bg-slate-900 hover:bg-slate-800 border border-slate-700 text-slate-400 font-mono text-xs tracking-wider rounded-xl transition duration-150">NÃO, CANCELAR</button>
                                 </div>
-                                <button onClick={() => { playSound('click', muted); setShowResetModal(false); }} class="absolute top-4 right-4 text-slate-500 hover:text-white transition">
+                                <button onClick={() => { playSound('click', muted); setShowResetModal(false); }} className="absolute top-4 right-4 text-slate-500 hover:text-white transition">
                                     <Icon name="x" className="w-4 h-4"/>
                                 </button>
                             </div>
@@ -608,11 +614,7 @@
 
         const container = document.getElementById('root');
         const root = ReactDOM.createRoot(container);
-        root.render((
-            <React.StrictMode>
-                <App />
-            </React.StrictMode>
-        ));
+        root.render(<App />);
     </script>
 </body>
 </html>
